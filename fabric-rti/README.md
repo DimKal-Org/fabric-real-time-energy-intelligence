@@ -404,9 +404,9 @@ fabric-rti/
 ├── sql/
 │   └── setup.sql                    ← Phase A scripts (DDL + CDC + auth)
 ├── notebooks/
-│   ├── 00_seed_dimensions.py        ← Phase B2: Lakehouse dimension tables
-│   ├── 01_carbon_intensity.py       ← Phase D1: carbon API → Event Hub
-│   └── 02_energy_simulator.py       ← Phase D2: simulator → SQL Server
+│   ├── 00_seed_dimensions.ipynb        ← Phase B2: Lakehouse dimension tables
+│   ├── 01_carbon_intensity.ipynb       ← Phase D1: carbon API → Event Hub
+│   └── 02_energy_simulator.ipynb       ← Phase D2: simulator → SQL Server
 └── kql/
     └── schema.kql                   ← Phase B4: all KQL table and view definitions
 ```
