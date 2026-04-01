@@ -1,0 +1,216 @@
+.create table EnergyReadings (
+    [specversion]: string,
+    [type]: string,
+    [source]: string,
+    [id]: string,
+    [logicalid]: string,
+    [time]: datetime,
+    [datacontenttype]: string,
+    [operation]: string,
+    [segmentindex]: long,
+    [finalsegment]: bool,
+    [data]: string,
+    [EventProcessedUtcTime]: datetime,
+    [PartitionId]: long,
+    [EventEnqueuedUtcTime]: datetime
+)
+
+// Set retention to 10 days
+.alter table EnergyReadings policy retention
+@'{ 
+  "SoftDeletePeriod": "10.00:00:00", 
+  "Recoverability": "Enabled" 
+}'
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+.create materialized-view with (backfill=true) ces_mv_energy_readings on table EnergyReadings
+{
+    EnergyReadings
+    | where finalsegment == true
+    | extend d = parse_json(data)
+    | extend
+        src_db      = tostring(d.eventsource.db),
+        src_schema  = tostring(d.eventsource.schema),
+        src_tbl     = tostring(d.eventsource.tbl),
+        operation   = tostring(operation),
+        row_current = parse_json(tostring(d.eventrow.current)),
+        row_old     = parse_json(tostring(d.eventrow.old))
+    | extend 
+        ReadingId   = tostring(row_current.ReadingId),
+        Timestamp   = todatetime(row_current.Timestamp),
+        MachineId   = tostring(row_current.MachineId),
+        PlantId   = tostring(row_current.PlantId),
+        LineId   = tostring(row_current.LineId),
+        ShiftId   = tostring(row_current.ShiftId),
+        PowerKw   = toreal(row_current.PowerKw),
+        EnergyKwhCumul   = tostring(row_current.EnergyKwhCumul),
+        OeePercent   = toreal(row_current.OeePercent),
+        ProductionUnits   = toreal(row_current.ProductionUnits),
+        CostPerKwh   = toreal(row_current.CostPerKwh),
+        CostThisTick   = toreal(row_current.CostThisTick),
+        CostPerUnit   = toreal(row_current.CostPerUnit),
+        EventTag   = tostring(row_current.EventTag)
+    | summarize take_any(
+        ReadingId,
+        Timestamp,
+        MachineId,
+        PlantId,
+        operation,
+        LineId,
+        ShiftId,
+        PowerKw,
+        EnergyKwhCumul,
+        OeePercent,
+        ProductionUnits,
+        CostPerKwh,
+        CostThisTick,
+        CostPerUnit,
+        EventTag,
+        row_old
+      )
+      by logicalid
+}
+
+.create table ces_energy_readings_curated
+(
+    logicalid: string,
+    ReadingId: string,
+    Timestamp: datetime,
+    MachineId: string,
+    PlantId: string,
+    LineId: string,
+    ShiftId: string,
+    operation: string,
+    PowerKw: real,
+    EnergyKwhCumul: string,
+    OeePercent: real,
+    ProductionUnits: real,
+    CostPerKwh: real,
+    CostThisTick: real,
+    CostPerUnit: real,
+    EventTag: string,
+    row_old: dynamic
+)
+
+.create-or-alter function ces_energy_readings_transform()
+{
+    EnergyReadings
+    | where finalsegment == true
+    | extend d = parse_json(data)
+    | extend
+        operation   = tostring(operation),
+        row_current = parse_json(tostring(d.eventrow.current)),
+        row_old     = parse_json(tostring(d.eventrow.old))
+    | extend 
+        ReadingId         = tostring(row_current.ReadingId),
+        Timestamp         = todatetime(row_current.Timestamp),
+        MachineId         = tostring(row_current.MachineId),
+        PlantId           = tostring(row_current.PlantId),
+        LineId            = tostring(row_current.LineId),
+        ShiftId           = tostring(row_current.ShiftId),
+        PowerKw           = toreal(row_current.PowerKw),
+        EnergyKwhCumul    = tostring(row_current.EnergyKwhCumul),
+        OeePercent        = toreal(row_current.OeePercent),
+        ProductionUnits   = toreal(row_current.ProductionUnits),
+        CostPerKwh        = toreal(row_current.CostPerKwh),
+        CostThisTick      = toreal(row_current.CostThisTick),
+        CostPerUnit       = toreal(row_current.CostPerUnit),
+        EventTag          = tostring(row_current.EventTag)
+    | summarize take_any(
+          ReadingId,
+          Timestamp,
+          MachineId,
+          PlantId,
+          operation,
+          LineId,
+          ShiftId,
+          PowerKw,
+          EnergyKwhCumul,
+          OeePercent,
+          ProductionUnits,
+          CostPerKwh,
+          CostThisTick,
+          CostPerUnit,
+          EventTag,
+          row_old
+      )
+      by logicalid
+}
+
+.alter table ces_energy_readings_curated
+policy update
+@'[{"IsEnabled": true,"Source": "EnergyReadings", "Query": "ces_energy_readings_transform()", "IsTransactional": true}]'
+
+.set-or-replace ces_energy_readings_curated <|
+ces_energy_readings_transform()
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+.create materialized-view with (backfill=true) energy_by_shift on table ces_energy_readings_curated
+{
+    ces_energy_readings_curated
+    | summarize
+        TotalCostEur   = sum(CostThisTick),
+        TotalKwh       = sum(PowerKw * 5.0/3600),
+        AvgOee         = avg(OeePercent),
+        AvgCostPerUnit = avg(CostPerUnit),
+        TotalUnits     = sum(ProductionUnits),
+        PeakPowerKw    = max(PowerKw)
+      by MachineId, LineId, ShiftId,
+         ShiftStart = bin(Timestamp, 8h)
+}
+
+.create table energy_by_shift
+(
+    MachineId: string,
+    LineId: string,
+    ShiftId: string,
+    ShiftStart: datetime,
+    TotalCostEur: real,
+    TotalKwh: real,
+    AvgOee: real,
+    AvgCostPerUnit: real,
+    TotalUnits: real,
+    PeakPowerKw: real
+)
+
+.create-or-alter function energy_by_shift_incremental()
+{
+    let lookback = 16h;
+    ces_energy_readings_curated
+    | where Timestamp >= ago(lookback)
+    | extend ShiftStart = bin(Timestamp, 8h)
+    | summarize
+        TotalCostEur   = sum(CostThisTick),
+        TotalKwh       = sum(PowerKw * 5.0/3600),
+        AvgOee         = avg(OeePercent),
+        AvgCostPerUnit = avg(CostPerUnit),
+        TotalUnits     = sum(ProductionUnits),
+        PeakPowerKw    = max(PowerKw)
+      by
+        MachineId,
+        LineId,
+        ShiftId,
+        ShiftStart
+}
+
+.alter table energy_by_shift
+policy update
+@'[{"IsEnabled": true, "Source": "ces_energy_readings_curated", "Query": "energy_by_shift_incremental()", "IsTransactional": false}]'
+
+.set-or-replace energy_by_shift <|
+energy_by_shift_incremental()
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// (Optional)
+.create materialized-view with (backfill=true) machine_cost_last_10min on table ces_energy_readings_curated
+{
+    ces_energy_readings_curated
+    | where Timestamp > ago(30m)
+    | summarize
+        AvgCostPerUnit = avg(CostPerUnit),
+        AvgPowerKw     = avg(PowerKw),
+        AvgOee         = avg(OeePercent),
+        RowCount       = count()
+      by MachineId, LineId,
+         WindowStart = bin(Timestamp, 1m)
+}
