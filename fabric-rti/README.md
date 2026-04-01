@@ -81,6 +81,31 @@ The carbon data living in the **Lakehouse** (not the KQL database) is intentiona
 
 ---
 
+## Infrastructure Phase - Azure Resources
+### I1. Create Azure Event Hub resource
+
+1. In the Azure portal, create a new **Event Hubs namespace**. Standard tier is sufficient.
+2. Create two Event Hubs (topics) inside the namespace:
+
+| Event Hub namespace     | Partition count | Retention | Purpose                        |
+|--------------------|-----------------|-----------|--------------------------------|
+| `demo-fabric-agents-rti`  | 4               | 1 day     | Change Event Stream  from SQL Server|
+
+3. For the Event Hub, create the following consumer groups:
+
+| Event Hub          | Consumer group  | Used by                        |
+|--------------------|-----------------|--------------------------------|
+| `energy-readings`  | `energy-cg`     | Fabric Eventstream pipeline 1  |
+
+4. Create a **Shared Access Policy** with `Send` + `Listen` permissions. Note the connection string — you will need it for the SQL configuration part..
+
+### I2. Create Azure SQL Server and Database
+1. In the Azure portal, create a new **Azure SQL Database**. Create a server if need be or host it to an existing server.
+
+2. Enable access from selected networks temporarily to connect through SSMS and execute the `sql/setup.sql script`.
+
+---
+
 ## Phase A — Azure SQL Database Setup
 ### A0 —  Setup database for CES
 
@@ -208,24 +233,7 @@ ALTER ROLE db_datawriter ADD MEMBER [your-app-registration-name];
 1. In the workspace, create a new **Lakehouse** named `manufacturing_lakehouse`.
 
 
-### B3 — Create Azure Event Hub namespace
-
-1. In the Azure portal, create a new **Event Hubs namespace**. Standard tier is sufficient.
-2. Create two Event Hubs (topics) inside the namespace:
-
-| Event Hub namespace     | Partition count | Retention | Purpose                        |
-|--------------------|-----------------|-----------|--------------------------------|
-| `demo-fabric-agents-rti`  | 4               | 1 day     | Change Event Stream  from SQL Server|
-
-3. For the Event Hub, create the following consumer groups:
-
-| Event Hub          | Consumer group  | Used by                        |
-|--------------------|-----------------|--------------------------------|
-| `energy-readings`  | `energy-cg`     | Fabric Eventstream pipeline 1  |
-
-4. Create a **Shared Access Policy** with `Send` + `Listen` permissions. Note the connection string — you will need it for the Eventstream source configuration and the carbon intensity notebook.
-
-### B4 — Create KQL database and table
+### B3 — Create KQL database and table
 
 1. In the Fabric workspace, create a new **Eventhouse** named `ManufacturingKQL`; this will also create a KQL database with the same name.
 2. Run `kql/schema.kql` in the KQL query editor.
