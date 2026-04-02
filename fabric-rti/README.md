@@ -109,105 +109,15 @@ The carbon data living in the **Lakehouse** (not the KQL database) is intentiona
 ## Phase A — Azure SQL Database Setup
 ### A0 —  Setup database for CES
 
-```sql
--- Step 1: Create a dedicated database
-CREATE DATABASE [sql-fabric-rti];
-GO
-
--- Step 2: Create master key in the newly created database
-CREATE MASTER KEY ENCRYPTION BY PASSWORD = '<Your Master Key Password>'
-GO
--- IMPORTANT: Make sure you have created a `Shared Access policy` first on the Event Hub instance
-CREATE DATABASE SCOPED CREDENTIAL EventHubsCreds
-    WITH IDENTITY = 'SHARED ACCESS SIGNATURE',
-    SECRET = '<SAS_TOKEN_FOR_ENERGY_READINGS_EVENT_HUB>' -- Should start like Endpoint=sb://...
-GO
-
--- Step 3: Enable the change event stream
-EXEC sys.sp_enable_event_stream
-GO
-
--- Step 4: Create a change event stream group
-EXEC sys.sp_create_event_stream_group
-    @stream_group_name =      N'EnergyReadingsStreamGroup',
-    @destination_type =       N'AzureEventHubsApacheKafka',
-    @destination_location =   N'<myEventHubsNamespace>.servicebus.windows.net:9093/<myEventHubsInstance>',
-    @destination_credential = EventHubsCreds,
-    @encoding = N'JSON',
-    @max_message_size_kb =    256;
-    --@partition_key_scheme =   N'<PatitionKeyScheme>'
-GO
-```
+Connect to your SQL Server instance and run `Section 1` that appears on the sql script.
 
 ### A1 — Create the EnergyReadings table and enable CDC
 
-Connect to your SQL Server instance and run the following script. CDC must be enabled at the database level before it can be enabled at the table level.
-
-```sql
--- Step 1: Create the EnergyReadings table
-CREATE TABLE dbo.EnergyReadings (
-    ReadingId        UNIQUEIDENTIFIER NOT NULL DEFAULT NEWSEQUENTIALID(),
-    Timestamp        DATETIME2(3)     NOT NULL,
-    MachineId        NVARCHAR(50)     NOT NULL,
-    PlantId          NVARCHAR(50)     NOT NULL DEFAULT 'PLANT-GR-01',
-    LineId           NVARCHAR(50)     NOT NULL,
-    ShiftId          NVARCHAR(20)     NOT NULL,
-    PowerKw          FLOAT            NOT NULL,
-    EnergyKwhCumul   FLOAT            NOT NULL,
-    OeePercent       FLOAT            NOT NULL,
-    ProductionUnits  BIGINT           NOT NULL,
-    CostPerKwh       FLOAT            NOT NULL,
-    CostThisTick     FLOAT            NOT NULL,
-    CostPerUnit      FLOAT            NOT NULL,
-    EventTag         NVARCHAR(50)     NULL
-);
-GO
-
--- Step 2: Add the table to the event stream group
-EXEC sys.sp_add_object_to_event_stream_group
-    N'EnergyReadingsStreamGroup',
-    N'dbo.EnergyReadings'
-```
+Connect to your SQL Server instance and run `Section 2` that appears on the sql script.
 
 ### A2 — Create authentication for the Fabric notebook
 
-The simulator notebook connects using either SQL Authentication or a Service Principal. Choose one approach and run the corresponding block.
-
-**Option A — SQL Authentication (simplest for demo)**
-
-```sql
--- Create a SQL login at the server level
-USE [master];
-CREATE LOGIN sql_user WITH PASSWORD = 'YourStr0ngPassword!';
-GO
-
--- Create a database user mapped to the login
-USE [sql-fabric-rti];
-CREATE USER sql_user FROM LOGIN sql_user;
-GO
-
--- Grant read/write access
-ALTER ROLE db_datareader ADD MEMBER sql_user;
-GO
-
-ALTER ROLE db_datawriter ADD MEMBER sql_user;
-GO
-```
-
-**Option B — Service Principal Authentication**
-
-```sql
--- (Optional) First, register an App Registration in Azure AD and note:
--- Tenant ID, Client ID, Client Secret
-
--- Create an external user in the database mapped to the Service Principal
-USE [sql-fabric-rti];
-CREATE USER [your-app-registration-name] FROM EXTERNAL PROVIDER;
-GO
-
-ALTER ROLE db_datareader ADD MEMBER [your-app-registration-name];
-ALTER ROLE db_datawriter ADD MEMBER [your-app-registration-name];
-```
+The simulator notebook connects using either SQL Authentication or a Service Principal. Choose one approach and run the corresponding block. This is `Section 3` and `Section 4` of the sql script
 
 > **Note for the demo:** SQL Authentication is simpler to configure and explain during a live session. Service Principal is more enterprise-grade. Either works identically for the notebook and CDC connector. Store credentials in Azure Key Vault and reference them via Fabric environment secrets — never hardcode them in the notebook.
 

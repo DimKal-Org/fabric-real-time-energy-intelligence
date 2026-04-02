@@ -3,6 +3,7 @@
 -- Execute each section in order.
 -- =============================================================================
 
+/* Section 1 */
 CREATE DATABASE [sql-fabric-rti];
 GO
 
@@ -37,6 +38,7 @@ EXEC sys.sp_create_event_stream_group
     --@partition_key_scheme =   N'<PatitionKeyScheme>'
 GO
 
+/* Section 2*/
 CREATE TABLE dbo.EnergyReadings (
     ReadingId        UNIQUEIDENTIFIER NOT NULL DEFAULT NEWSEQUENTIALID(),
     Timestamp        DATETIME2(3)     NOT NULL,
@@ -60,6 +62,7 @@ EXEC sys.sp_add_object_to_event_stream_group
      N'EnergyReadingsStreamGroup',
      N'dbo.EnergyReadings'
 
+/* Section 3*/
 -- Create a SQL login at the server level
 USE [master];
 CREATE LOGIN sql_user WITH PASSWORD = 'YOUR PASSWORD HERE';
@@ -77,6 +80,7 @@ GO
 ALTER ROLE db_datawriter ADD MEMBER sql_user;
 GO
 
+/* Section 4*/
 -- (Optional)  First, register an App Registration in Azure AD and note:
 -- Tenant ID, Client ID, Client Secret
 -- Create an external user in the database mapped to the Service Principal
