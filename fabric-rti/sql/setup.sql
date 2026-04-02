@@ -77,7 +77,9 @@ GO
 ALTER ROLE db_datawriter ADD MEMBER sql_user;
 GO
 
--- (Optional) Create an external user in the database mapped to the Service Principal
+-- (Optional)  First, register an App Registration in Azure AD and note:
+-- Tenant ID, Client ID, Client Secret
+-- Create an external user in the database mapped to the Service Principal
 USE [sql-fabric-rti];
 CREATE USER [your-app-registration-name] FROM EXTERNAL PROVIDER;
 GO

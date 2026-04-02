@@ -197,8 +197,8 @@ GO
 **Option B — Service Principal Authentication**
 
 ```sql
--- First, register an App Registration in Azure AD and note:
---   Tenant ID, Client ID, Client Secret
+-- (Optional) First, register an App Registration in Azure AD and note:
+-- Tenant ID, Client ID, Client Secret
 
 -- Create an external user in the database mapped to the Service Principal
 USE [sql-fabric-rti];
