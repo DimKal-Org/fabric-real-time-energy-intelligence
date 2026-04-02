@@ -324,16 +324,18 @@ When answering questions:
 You are talking to a plant manager or operations director. Be direct and actionable.
 ```
 
-4. Suggested demo Q&A flows to rehearse:
+4. Suggested demo Q&A flows to rehearse (ordered by escalating reasoning complexity):
 
-| Question | What it demonstrates |
-|---|---|
-| "Which machine has the highest cost per unit right now?" | Basic real-time aggregation |
-| "Why is WELD-L2-A so expensive compared to WELD-L2-B?" | Anomaly identification with context |
-| "What is the carbon cost per unit on Line 3 right now?" | Cross-stream join (energy + carbon) |
-| "Which machine has the worst OEE trend in the last 10 minutes?" | Time-series trend analysis |
-| "What is the combined financial impact of both anomalies this shift?" | Compound multi-machine query |
-| "If COAT-L3-A ran at 85% OEE instead of 61%, how much would we save per shift?" | Hypothetical / what-if |
+| # | Question | What it demonstrates | Data sources used |
+|---|---|---|---|
+| 1 | "Which machine has the highest cost per unit right now?" | Warmup — single-table aggregation | KQL: `ces_energy_readings_curated` |
+| 2 | "Why is WELD-L2-A so expensive compared to WELD-L2-B?" | Anomaly identification — agent compares current PowerKw against NominalPowerKw from dim_machine to explain the 2.3× spike | KQL + Lakehouse: `dim_machine` |
+| 3 | "What is the carbon cost per unit on Line 3 right now?" | Cross-store join — agent fetches energy per unit from KQL and GCo2PerKwh from Lakehouse, then multiplies | KQL + Lakehouse: `carbon_intensity` |
+| 4 | "Which machine has the worst OEE trend in the last 10 minutes?" | Time-series trend analysis — agent must compute direction of change, not just current value | KQL: `ces_energy_readings_curated` |
+| 5 | "WELD-L2-A has a power spike and COAT-L3-A has an OEE drop. What is the combined extra cost this shift compared to their normal baselines?" | Compound multi-machine reasoning — agent must look up baselines from dim_machine, compute excess cost for each, and sum | KQL: `energy_by_shift` + Lakehouse: `dim_machine` |
+| 6 | "If COAT-L3-A ran at 85% OEE instead of 61%, how much would we save per shift?" | Hypothetical / what-if — agent recalculates with target OEE and computes the delta | KQL + Lakehouse: `dim_machine` |
+| 7 | "If we were on peak tariff instead of the demo flat rate, what would WELD-L2-A's cost per unit be right now?" | Tariff scenario — agent looks up both tariff rates from dim_energy_tariff and recalculates | KQL + Lakehouse: `dim_energy_tariff` |
+| 8 | "Which machines are past their maintenance cycle and also showing below-average OEE?" | Reference data join — agent combines MaintenanceCycleDays and InstallYear from dim_machine with live OEE from KQL | KQL + Lakehouse: `dim_machine` |
 
 ---
 
