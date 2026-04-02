@@ -30,7 +30,7 @@ Fabric Notebook (notebooks/00_seed_dimensions)
 
 [Insights]
 KQL Database + ManufacturingLakehouse
-    └── Power BI Real-Time Dashboard  (Direct Query from KQL)
+    └── Fabric Real Time Dashboard     (KQL native queries)
     └── Fabric Data Agent             (queries BOTH KQL and Lakehouse)
 ```
 
@@ -215,15 +215,21 @@ Run the notebook `notebooks/02_energy_simulator.py`.
 
 ## Phase E — Insights Layer
 
-### E1 — Power BI real-time dashboard
+### E1 — Fabric Real Time Dashboard
 
-Create a new Power BI report connected to `ManufacturingKQL` via **Direct Query** (not import mode — you need live data).
+Create a new **Real Time Dashboard** in the Fabric workspace connected to the `ManufacturingKQL` KQL database. Real Time Dashboards query KQL natively and support automatic refresh — no DirectQuery or import mode needed.
+
+1. In the workspace, click **+ New → Real Time Dashboard**.
+2. Name it `Energy Intelligence Dashboard`.
+3. Add the `ManufacturingKQL` database as a data source.
+4. Create tiles using the KQL queries below. All queries target the deduplicated `ces_energy_readings_curated` table or the pre-aggregated `energy_by_shift` table — never the raw `EnergyReadings` table.
+5. Set the dashboard **auto-refresh interval to 30 seconds** (minimum supported).
 
 Recommended tiles and their KQL queries:
 
 **Cost per unit — per machine (last 10 minutes)**
 ```kql
-EnergyReadings
+ces_energy_readings_curated
 | where Timestamp > ago(10m)
 | summarize AvgCostPerUnit = avg(CostPerUnit) by MachineId
 | order by AvgCostPerUnit desc
@@ -231,7 +237,7 @@ EnergyReadings
 
 **Live energy draw — all machines**
 ```kql
-EnergyReadings
+ces_energy_readings_curated
 | where Timestamp > ago(5m)
 | summarize AvgPowerKw = avg(PowerKw) by MachineId, bin(Timestamp, 30s)
 | order by Timestamp asc
@@ -239,30 +245,25 @@ EnergyReadings
 
 **OEE trend — last 15 minutes**
 ```kql
-EnergyReadings
+ces_energy_readings_curated
 | where Timestamp > ago(15m)
 | summarize AvgOee = avg(OeePercent) by MachineId, bin(Timestamp, 1m)
 ```
 
-**Carbon cost per unit — joined with carbon intensity**
+**Shift summary — current shift (from pre-aggregated table)**
 ```kql
-let LatestCarbon = CarbonIntensity | top 1 by Timestamp desc;
-EnergyReadings
-| where Timestamp > ago(10m)
-| summarize AvgPowerKw = avg(PowerKw), AvgUnits = avg(todouble(ProductionUnits))
-  by MachineId
-| extend CarbonCostPerUnit = (AvgPowerKw * (5.0/3600)) * toscalar(LatestCarbon | project GCo2PerKwh)
-         / AvgUnits
+energy_by_shift
+| where ShiftStart > ago(8h)
+| project MachineId, LineId, ShiftId, TotalCostEur, TotalKwh, AvgOee, AvgCostPerUnit, TotalUnits, PeakPowerKw
+| order by TotalCostEur desc
 ```
 
 **Cumulative shift cost ticker**
 ```kql
-EnergyReadings
-| where ShiftId == "Morning"   // parameterise by current shift
-| summarize TotalCostEur = sum(CostThisTick)
+energy_by_shift
+| where ShiftStart > ago(8h)
+| summarize TotalCostEur = sum(TotalCostEur), TotalKwh = sum(TotalKwh), TotalUnits = sum(TotalUnits)
 ```
-
-Set the dashboard **auto-refresh to 5 seconds** in Power BI service page settings.
 
 ### E2 — Fabric data agent
 
