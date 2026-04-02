@@ -34,12 +34,12 @@ KQL Database + ManufacturingLakehouse
     └── Fabric Data Agent             (queries BOTH KQL and Lakehouse)
 ```
 
-### What the Demo Shows
+## What the Demo Shows
 
-- **Phase 1 — Baseline (~0–1.5 min):** All 10 machines running normally. Clean, stable dashboard establishes trust with the audience.
-- **Phase 2 — Energy spike (~1.5 min):** WELD-L2-A surges to 2.3× normal power draw. Cost-per-unit spikes visibly on the dashboard. Agent explains why.
-- **Phase 3 — OEE degradation (~2.5 min):** COAT-L3-A drifts from 82% to ~61% OEE. Power stays flat but output drops — a silent financial bleed invisible without real-time data.
-- **Phase 4 — Both sustained (~5 min onward):** Two simultaneous problems visible. Data agent answers compound questions across both anomalies, enriched with carbon context from the Lakehouse.
+### - **Phase 1 — Baseline (~0–1.5 min):** All 10 machines running normally. Clean, stable dashboard establishes trust with the audience.
+### - **Phase 2 — Energy spike (~1.5 min):** WELD-L2-A surges to 2.3× normal power draw. Cost-per-unit spikes visibly on the dashboard. Agent explains why.
+### - **Phase 3 — OEE degradation (~2.5 min):** COAT-L3-A drifts from 82% to ~61% OEE. Power stays flat but output drops — a silent financial bleed invisible without real-time data.
+### - **Phase 4 — Both sustained (~5 min onward):** Two simultaneous problems visible. Data agent answers compound questions across both anomalies, enriched with carbon context from the Lakehouse.
 
 ---
 
