@@ -5,7 +5,7 @@
 
 ## Overview
 
-This guide walks through the complete implementation of an end-to-end real-time analytics demo. The scenario simulates an industrial manufacturing plant streaming energy consumption data from an Azure SQL Database — using Change Event Streaming (CES) — through Azure Event Hub into Microsoft Fabric, where it is surfaced via a **Power BI real-time dashboard** and a **Fabric data agent**.
+This guide walks through the complete implementation of an end-to-end real-time analytics demo. The scenario simulates an industrial manufacturing plant streaming energy consumption data from an Azure SQL Database — using Change Event Streaming (CES) — through Azure Event Hub into Microsoft Fabric, where it is surfaced via a **Real-time dashboard in Fabric** and a **Fabric data agent**.
 
 The goal is _not to show another tool_. It is to demonstrate the capability and the real value that industrial manufacturing companies can get today — from machine sensor to boardroom decision in seconds, not months.
 
@@ -112,7 +112,7 @@ The carbon data living in the **Lakehouse** (not the KQL database) is intentiona
 
 Connect to your SQL Server instance and run `Section 1` that appears on the sql script.
 
-### A1 — Create the EnergyReadings table and enable CDC
+### A1 — Create the EnergyReadings table
 
 Connect to your SQL Server instance and run `Section 2` that appears on the sql script.
 
@@ -188,7 +188,7 @@ Why a Variable Library? It decouples notebooks from a specific workspace or Lake
    - Namespace: `demo-fabric-agents-rti`
    - Event Hub: `energy-readings`
    - Consumer group: `energy-cg`
-   - Authentication: Shared Access Policy (connection string from B3)
+   - Authentication: Shared Access Policy (connection string from I1)
 4. **Destination:** KQL Database
    - Workspace: your Fabric workspace
    - KQL Database: `ManufacturingKQL`
@@ -201,11 +201,11 @@ Why a Variable Library? It decouples notebooks from a specific workspace or Lake
 
 ### D1 — Carbon Intensity notebook (run once)
 
-Run the notebook `notebooks/00_carbon_intensity.py`. No configuration needed. Re-running safely overwrites data.
+Run the notebook `notebooks/01_carbon_intensity.ipynb`. No configuration needed. Re-running safely overwrites data.
 
 ### D2 - Seed Dimensions notebook (run once)
 
-Run the notebook `notebooks/01_seed_dimensions.py`.
+Run the notebook `notebooks/00_seed_dimensions.ipynb`.
 
 > For the demo, use `TARIFF-DEMO` (flat €0.14/kWh) to keep cost calculations simple and explainable. In a real deployment you would join against peak/off-peak tariffs dynamically.
 
@@ -213,7 +213,7 @@ Run the notebook `notebooks/01_seed_dimensions.py`.
 
 This is the main simulator. Connect to SQL Server using your chosen authentication method and run the continuous loop.
 
-Run the notebook `notebooks/02_energy_simulator.py`.
+Run the notebook `notebooks/02_energy_simulator.ipynb`.
 ---
 
 ## Phase E — Insights Layer
@@ -302,7 +302,7 @@ Create a **Data Activator** to automatically alert when a machine's cost per uni
 
 1. In the Fabric workspace, create a new **Data Agent**.
 2. Add data sources:
-   - KQL Database: `ManufacturingKQL` (tables: `ces_energy_readings_curated`, `energy_by_shift_table`)
+   - KQL Database: `ManufacturingKQL` (tables: `ces_energy_readings_curated`, `energy_by_shift`)
    - Lakehouse: `ManufacturingLakehouse` (tables: `dim_machine`, `dim_energy_tariff`, `carbon_intensity`)
 3. Set the following system prompt:
 
@@ -339,7 +339,7 @@ You are talking to a plant manager or operations director. Be direct and actiona
 ### 30 minutes before
 
 - [ ] Start **D1** (carbon intensity notebook) — confirm rows appearing in `CarbonIntensity` KQL table
-- [ ] Start **D2** (energy simulator notebook) — confirm rows appearing in `EnergyReadings` KQL table
+- [ ] Start **D3** (energy simulator notebook) — confirm rows appearing in `EnergyReadings` KQL table
 - [ ] Open Real Time Dashboard — confirm tiles refreshing with live data
 - [ ] Open data agent — run one test question to confirm it responds correctly
 - [ ] Check Eventstream status — should show **Running**
@@ -356,8 +356,8 @@ You are talking to a plant manager or operations director. Be direct and actiona
 
 ### If something goes wrong
 
-- **No data on dashboard:** Check Eventstream status. If stopped, restart both pipelines. Data resumes within 30 seconds.
-- **Notebook disconnected:** Restart D2. The simulator picks up from the current iteration — cumulative kWh will reset but the demo phases will replay correctly.
+- **No data on dashboard:** Check Eventstream status. If stopped, restart the pipeline. Data resumes within 30 seconds.
+- **Notebook disconnected:** Restart D3. The simulator picks up from the current iteration — cumulative kWh will reset but the demo phases will replay correctly.
 - **Agent not responding:** Refresh the agent page. KQL queries run fresh on each question so there is no stale state to clear.
 
 ---
@@ -371,8 +371,8 @@ fabric-rti/
 │   └── setup.sql                    ← Phase A scripts (DDL + CDC + auth)
 ├── notebooks/
 │   ├── 00_seed_dimensions.ipynb        ← Phase B2: Lakehouse dimension tables
-│   ├── 01_carbon_intensity.ipynb       ← Phase D1: carbon API → Event Hub
-│   └── 02_energy_simulator.ipynb       ← Phase D2: simulator → SQL Server
+│   ├── 01_carbon_intensity.ipynb       ← Phase D1: carbon Intensity → Lakehouse
+│   └── 02_energy_simulator.ipynb       ← Phase D3: simulator → SQL Server
 └── kql/
     └── schema.kql                   ← Phase B4: all KQL table and view definitions
 ```

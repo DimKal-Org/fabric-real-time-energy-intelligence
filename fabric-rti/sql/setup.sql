@@ -29,7 +29,7 @@ EXEC sys.sp_enable_event_stream
 GO
 
 EXEC sys.sp_create_event_stream_group
-    @stream_group_name =      N'EventStreamToFabric',
+    @stream_group_name =      N'EnergyReadingsStreamGroup ',
     @destination_type =       N'AzureEventHubsApacheKafka',
     @destination_location =   N'myEventHubsNamespace.servicebus.windows.net:9093/myEventHubsInstance',
     @destination_credential = EventHubsCreds,
