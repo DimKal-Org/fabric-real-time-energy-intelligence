@@ -40,6 +40,7 @@ KQL Database + ManufacturingLakehouse
 ### - **Phase 2 — Energy spike (~2.5 min):**       WELD-L2-A surges to 2.3× normal power draw. Cost-per-unit spikes visibly on the dashboard. Agent explains why.
 ### - **Phase 3 — OEE degradation (~4 min):**      COAT-L3-A drifts from 82% to ~61% OEE. Power stays flat but output drops — a silent financial bleed invisible without real-time data.
 ### - **Phase 4 — Both active (~4–7 min):**        Two simultaneous problems visible. Data agent answers compound questions across both anomalies, enriched with carbon context from the Lakehouse. After ~7 min the spike resolves — but the silent OEE bleed on COAT-L3-A continues, showing the harder-to-spot problem persists even after the obvious one clears.
+### - **Phase 5 — Activator alert (on demand):**    Presenter flips a variable in the Variable Library (`spike_power_multiplier` → `2.3`). Dashboard spikes within 30 seconds. The Fabric Activator fires a Teams notification automatically — closing the loop from sensor to alert with zero code changes during the demo.
 
 ---
 
@@ -161,11 +162,13 @@ Objects created:
 All notebooks reference a shared Variable Library to resolve environment-specific paths (e.g. the Lakehouse ABFSS path) without hardcoding them.
 
 1. In the Fabric workspace, create a new **Variable Library** named `var_library_rti`.
-2. Add the following variable:
+2. Add the following variables:
 
-| Variable name      | Type   | Value                                                    |
-|--------------------|--------|----------------------------------------------------------|
-| `lakehouse_abfss`  | String | The ABFSS path of `manufacturing_lakehouse` (e.g. `abfss://<workspace>@onelake.dfs.fabric.microsoft.com/<lakehouse>/`) |
+| Variable name             | Type   | Default value                                            | Purpose                                      |
+|---------------------------|--------|----------------------------------------------------------|----------------------------------------------|
+| `lakehouse_abfss`         | String | The ABFSS path of `manufacturing_lakehouse`              | Lakehouse path for notebooks                 |
+| `spike_machine_id`        | String | *(empty string)*                                         | Machine to target with spike — set during demo |
+| `spike_power_multiplier`  | String | `1.0`                                                    | Power multiplier — set to `2.3` to trigger spike |
 
 > To find the ABFSS path: open the Lakehouse, click **…** → **Properties** → copy the **ABFSS path**.
 
@@ -275,7 +278,27 @@ energy_by_shift
 | Shift summary — current shift | Table | Multiple columns per machine — no single chart captures all dimensions |
 | Cumulative shift cost ticker | Stat (multi-stat card) | Three big numbers: total cost €, total kWh, total units |
 
-### E2 — Fabric data agent
+### E2 — Fabric Activator
+
+Create a **Data Activator** to automatically alert when a machine's cost per unit exceeds its normal range.
+
+1. In the Fabric workspace, click **+ New → Activator**.
+2. **Source:** KQL Database → `ces_energy_readings_curated`
+3. **Object ID:** Set `MachineId` as the object identifier (each machine is monitored independently).
+4. **Condition:** `CostPerUnit > 0.003` (baseline machines sit around €0.001–0.002 per unit; a 2.3× spike pushes it well above this threshold).
+5. **Action:** Send a **Teams message** or **Email** — e.g., *"Machine {MachineId} cost per unit exceeded threshold: €{CostPerUnit}"*
+
+**Demo flow:**
+1. Simulator running → dashboard shows stable baseline → Activator is silent.
+2. Presenter opens Variable Library → sets `spike_machine_id` = `WELD-L2-A` and `spike_power_multiplier` = `2.3`.
+3. Next simulator tick picks it up → power surges → CES → Event Hub → KQL.
+4. Dashboard visibly spikes within 30 seconds.
+5. Activator fires → Teams/email notification arrives.
+6. Presenter resets `spike_power_multiplier` = `1.0` → machine returns to normal → alert clears.
+
+> **Demo talking point:** "No code was changed. No notebook was restarted. A single configuration change in the Variable Library caused a real data event that flowed through the entire pipeline — from SQL Server to Event Hub to KQL to an automated alert — in under a minute."
+
+### E3 — Fabric data agent
 
 1. In the Fabric workspace, create a new **Data Agent**.
 2. Add data sources:
@@ -317,16 +340,19 @@ You are talking to a plant manager or operations director. Be direct and actiona
 
 - [ ] Start **D1** (carbon intensity notebook) — confirm rows appearing in `CarbonIntensity` KQL table
 - [ ] Start **D2** (energy simulator notebook) — confirm rows appearing in `EnergyReadings` KQL table
-- [ ] Open Power BI dashboard — confirm tiles refreshing with live data
+- [ ] Open Real Time Dashboard — confirm tiles refreshing with live data
 - [ ] Open data agent — run one test question to confirm it responds correctly
-- [ ] Check Eventstream status for both pipelines — both should show **Running**
+- [ ] Check Eventstream status — should show **Running**
+- [ ] Confirm Activator is active and condition is set (`CostPerUnit > 0.003`)
+- [ ] Confirm Variable Library has `spike_machine_id` = *(empty)* and `spike_power_multiplier` = `1.0`
 
 ### During the demo
 
-- Simulator runs automatically through all 4 phases — no manual intervention needed
-- Phase 2 (energy spike) begins at approximately **4 minutes** after D2 starts
-- Phase 3 (OEE degradation) begins at approximately **7 minutes** after D2 starts
-- Both anomalies are sustained from **11 minutes** onwards — this is when to ask the compound agent questions
+- Simulator runs automatically through Phases 1–4 — no manual intervention needed
+- Phase 2 (energy spike) begins at approximately **2.5 minutes** after D3 starts
+- Phase 3 (OEE degradation) begins at approximately **4 minutes** after D3 starts
+- Both anomalies are sustained from **4 minutes** onwards — this is when to ask the compound agent questions
+- **Phase 5 (Activator):** When ready, open Variable Library → set `spike_machine_id` = `WELD-L2-A` and `spike_power_multiplier` = `2.3` → wait for dashboard spike → Teams notification arrives → reset `spike_power_multiplier` = `1.0`
 
 ### If something goes wrong
 
