@@ -36,10 +36,10 @@ KQL Database + ManufacturingLakehouse
 
 ## What the Demo Shows
 
-### - **Phase 1 — Baseline (~0–1.5 min):** All 10 machines running normally. Clean, stable dashboard establishes trust with the audience.
-### - **Phase 2 — Energy spike (~1.5 min):** WELD-L2-A surges to 2.3× normal power draw. Cost-per-unit spikes visibly on the dashboard. Agent explains why.
-### - **Phase 3 — OEE degradation (~2.5 min):** COAT-L3-A drifts from 82% to ~61% OEE. Power stays flat but output drops — a silent financial bleed invisible without real-time data.
-### - **Phase 4 — Both sustained (~5 min onward):** Two simultaneous problems visible. Data agent answers compound questions across both anomalies, enriched with carbon context from the Lakehouse.
+### - **Phase 1 — Baseline (~0–2.5 min):** All 10 machines running normally. Clean, stable dashboard establishes trust with the audience.
+### - **Phase 2 — Energy spike (~2.5 min):**       WELD-L2-A surges to 2.3× normal power draw. Cost-per-unit spikes visibly on the dashboard. Agent explains why.
+### - **Phase 3 — OEE degradation (~4 min):**      COAT-L3-A drifts from 82% to ~61% OEE. Power stays flat but output drops — a silent financial bleed invisible without real-time data.
+### - **Phase 4 — Both active (~4–7 min):**        Two simultaneous problems visible. Data agent answers compound questions across both anomalies, enriched with carbon context from the Lakehouse. After ~7 min the spike resolves — but the silent OEE bleed on COAT-L3-A continues, showing the harder-to-spot problem persists even after the obvious one clears.
 
 ---
 
@@ -246,6 +246,25 @@ Objects created:
 | `ces_energy_readings_curated` | Table + update policy | Deduplicates the raw data |
 | `energy_by_shift` | Table + update policy | Aggregated per machine per shift |
 
+### B4 — Create the Variable Library
+
+All notebooks reference a shared Variable Library to resolve environment-specific paths (e.g. the Lakehouse ABFSS path) without hardcoding them.
+
+1. In the Fabric workspace, create a new **Variable Library** named `var_library_rti`.
+2. Add the following variable:
+
+| Variable name      | Type   | Value                                                    |
+|--------------------|--------|----------------------------------------------------------|
+| `lakehouse_abfss`  | String | The ABFSS path of `manufacturing_lakehouse` (e.g. `abfss://<workspace>@onelake.dfs.fabric.microsoft.com/<lakehouse>/`) |
+
+> To find the ABFSS path: open the Lakehouse, click **…** → **Properties** → copy the **ABFSS path**.
+
+Notebooks load it with:
+```python
+variables = notebookutils.variableLibrary.getLibrary("var_library_rti")
+# then use: variables.lakehouse_abfss
+```
+Why a Variable Library? It decouples notebooks from a specific workspace or Lakehouse instance. You can clone the workspace, update a single variable, and all notebooks work — no find-and-replace across code cells.
 ---
 
 ## Phase C — Eventstream configuration for energy readings
