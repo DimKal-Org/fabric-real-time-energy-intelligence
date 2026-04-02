@@ -265,6 +265,16 @@ energy_by_shift
 | summarize TotalCostEur = sum(TotalCostEur), TotalKwh = sum(TotalKwh), TotalUnits = sum(TotalUnits)
 ```
 
+**Suggested visual types per tile:**
+
+| Tile | Visual type | Notes |
+|---|---|---|
+| Cost per unit — per machine | Bar chart (horizontal) | Sort descending so the worst offender is on top |
+| Live energy draw — all machines | Line chart | One line per `MachineId`, `Timestamp` on x-axis — this is the "moving data" tile |
+| OEE trend — last 15 minutes | Line chart or Area chart | Area variant makes OEE drops more dramatic (useful for the COAT-L3-A degradation story) |
+| Shift summary — current shift | Table | Multiple columns per machine — no single chart captures all dimensions |
+| Cumulative shift cost ticker | Stat (multi-stat card) | Three big numbers: total cost €, total kWh, total units |
+
 ### E2 — Fabric data agent
 
 1. In the Fabric workspace, create a new **Data Agent**.
