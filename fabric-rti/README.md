@@ -80,6 +80,9 @@ Carbon data is pre-seeded as a Delta table in the Lakehouse rather than streamed
 
 The carbon data living in the **Lakehouse** (not the KQL database) is intentional. It demonstrates that the data agent can query across two different data stores — real-time KQL for energy readings and Delta tables for carbon context — in a single conversation. That is the unified analytics story.
 
+### Why Tables with Update Policies Instead of Materialized Views
+The KQL schema defines ces_energy_readings_curated and energy_by_shift as physical tables with update policies rather than materialized views. Both approaches produce the same result — automatic transformation of incoming data — but Fabric Data Agents can only query physical tables, not materialized views. Since the data agent is a core part of this demo, physical tables with update policies are required.
+
 ---
 
 ## Infrastructure Phase - Azure Resources
@@ -120,7 +123,7 @@ Connect to your SQL Server instance and run `Section 2` that appears on the sql 
 
 The simulator notebook connects using either SQL Authentication or a Service Principal. Choose one approach and run the corresponding block. This is `Section 3` and `Section 4` of the sql script
 
-> **Note for the demo:** SQL Authentication is simpler to configure and explain during a live session. Service Principal is more enterprise-grade. Either works identically for the notebook and CDC connector. Store credentials in Azure Key Vault and reference them via Fabric environment secrets — never hardcode them in the notebook.
+> **Note for the demo:** SQL Authentication is simpler to configure and explain during a live session. Service Principal is more enterprise-grade. Either works identically for the notebook and CES connector. Store credentials in Azure Key Vault and reference them via Fabric environment secrets — never hardcode them in the notebook.
 
 ---
 
@@ -338,7 +341,7 @@ You are talking to a plant manager or operations director. Be direct and actiona
 
 ### 30 minutes before
 
-- [ ] Start **D1** (carbon intensity notebook) — confirm rows appearing in `CarbonIntensity` KQL table
+- [ ] Start **D1** (carbon intensity notebook) — confirm rows appearing in `carbon_intensity` lakehouse table
 - [ ] Start **D3** (energy simulator notebook) — confirm rows appearing in `EnergyReadings` KQL table
 - [ ] Open Real Time Dashboard — confirm tiles refreshing with live data
 - [ ] Open data agent — run one test question to confirm it responds correctly
@@ -368,7 +371,7 @@ You are talking to a plant manager or operations director. Be direct and actiona
 fabric-rti/
 ├── README.md                        ← this file
 ├── sql/
-│   └── setup.sql                    ← Phase A scripts (DDL + CDC + auth)
+│   └── setup.sql                    ← Phase A scripts (DDL + CES + auth)
 ├── notebooks/
 │   ├── 00_seed_dimensions.ipynb        ← Phase B2: Lakehouse dimension tables
 │   ├── 01_carbon_intensity.ipynb       ← Phase D1: carbon Intensity → Lakehouse
