@@ -32,8 +32,8 @@ EXEC sys.sp_create_event_stream_group
     @destination_type =       N'AzureEventHubsApacheKafka',
     @destination_location =   N'myEventHubsNamespace.servicebus.windows.net:9093/myEventHubsInstance',
     @destination_credential = EventHubsCreds,
-    @encoding = N'JSON';
-    --@max_message_size_kb =    4048
+    @encoding = N'JSON',
+    @max_message_size_kb =    256;
     --@partition_key_scheme =   N'<PatitionKeyScheme>'
 GO
 
