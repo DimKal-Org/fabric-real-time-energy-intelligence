@@ -325,6 +325,7 @@ You are talking to a plant manager or operations director. Be direct and actiona
 ```
 
 4. Suggested demo Q&A flows to rehearse (ordered by escalating reasoning complexity):
+
 | # | Question | What it demonstrates |
 |---|---|---|---|
 | 1 | Which machine is currently consuming power significantly above its nominal rating, and what event might explain it?	| Anomaly detection via cross-table join (live readings vs. dim_machine.NominalPowerKw) and causal correlation with EventTag |
