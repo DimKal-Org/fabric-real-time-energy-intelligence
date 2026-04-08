@@ -327,13 +327,13 @@ You are talking to a plant manager or operations director. Be direct and actiona
 4. Suggested demo Q&A flows to rehearse (ordered by escalating reasoning complexity):
 | # | Question | What it demonstrates |
 |---|---|---|---|
-1 | Which machine is currently consuming power significantly above its nominal rating, and what event might explain it?	| Anomaly detection via cross-table join (live readings vs. dim_machine.NominalPowerKw) and causal correlation with EventTag |
-2 | Is there a machine where OEE has been declining while energy cost per unit has been rising? What does that suggest about its operational health? | Inverse trend detection across two metrics over time; business interpretation of signal correlation |
-3 | Which shift produces the most units per euro spent, and does that advantage come from lower tariffs or better OEE? | Derived ratio reasoning (TotalUnits / TotalCostEur) with causal attribution across energy_by_shift and dim_energy_tariff |
-4 | Which critical machines are past their maintenance cycle and also showing above-average power draw? Should I be concerned? | Risk assessment joining dim_machine (CriticalityRating, MaintenanceCycleDays, InstallYear) with real-time consumption patterns |
-5 | Over the last hour, did any machine experience a sudden power spike followed by an OEE drop within the next few minutes? | Describe the sequence of events.	Temporal pattern detection — windowed time-series analysis with event sequencing and narrative explanation |
-6 | What percentage of today's total energy cost is attributable to anomalous events (spikes or degradation) versus normal operation? | Cost decomposition by filtering on EventTag presence; quantifying the financial impact of anomalies |
-7 | Compare Line2-Weld and Line4-Assembly: which line is more energy-efficient per production unit, and what machine characteristics from the dimension table explain the difference? | Multi-table benchmarking with causal explanation — aggregated KQL metrics joined to dim_machine attributes (MachineType, NominalPowerKw, InstallYear, BaseOEE) |
+| 1 | Which machine is currently consuming power significantly above its nominal rating, and what event might explain it?	| Anomaly detection via cross-table join (live readings vs. dim_machine.NominalPowerKw) and causal correlation with EventTag |
+| 2 | Is there a machine where OEE has been declining while energy cost per unit has been rising? What does that suggest about its operational health? | Inverse trend detection across two metrics over time; business interpretation of signal correlation |
+| 3 | Which shift produces the most units per euro spent, and does that advantage come from lower tariffs or better OEE? | Derived ratio reasoning (TotalUnits / TotalCostEur) with causal attribution across energy_by_shift and dim_energy_tariff |
+| 4 | Which critical machines are past their maintenance cycle and also showing above-average power draw? Should I be concerned? | Risk assessment joining dim_machine (CriticalityRating, MaintenanceCycleDays, InstallYear) with real-time consumption patterns |
+| 5 | Over the last hour, did any machine experience a sudden power spike followed by an OEE drop within the next few minutes? | Describe the sequence of events.	Temporal pattern detection — windowed time-series analysis with event sequencing and narrative explanation |
+| 6 | What percentage of today's total energy cost is attributable to anomalous events (spikes or degradation) versus normal operation? | Cost decomposition by filtering on EventTag presence; quantifying the financial impact of anomalies |
+| 7 | Compare Line2-Weld and Line4-Assembly: which line is more energy-efficient per production unit, and what machine characteristics from the dimension table explain the difference? | Multi-table benchmarking with causal explanation — aggregated KQL metrics joined to dim_machine attributes (MachineType, NominalPowerKw, InstallYear, BaseOEE) |
 
 ---
 
