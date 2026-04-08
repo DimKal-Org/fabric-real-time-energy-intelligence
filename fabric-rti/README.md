@@ -321,6 +321,14 @@ When answering questions:
 - Compare current performance against the machine's nominal power (from dim_machine)
 - Keep answers concise — one or two sentences followed by the key numbers
 
+Pre-built KQL functions are available for complex analytical patterns. Use these
+instead of writing advanced KQL from scratch:
+- machines_with_declining_efficiency() — returns machines where OEE is declining shift-over-shift while cost per unit is rising, with a health pattern assessment.
+- spike_then_oee_drop() — finds machines where a power spike was followed by an OEE drop within 5 minutes over the last hour.
+- anomaly_cost_share() — breaks down today's total energy cost into anomalous (any EventTag present) vs. normal operation, with percentages.
+
+When a question matches one of these functions, call it directly. You can filter or extend the results further if needed.
+
 You are talking to a plant manager or operations director. Be direct and actionable.
 ```
 
@@ -329,11 +337,11 @@ You are talking to a plant manager or operations director. Be direct and actiona
 | # | Question | What it demonstrates |
 |---|---|---|
 | 1 | Which machine is currently consuming power significantly above its nominal rating, and what event might explain it? | Anomaly detection via cross-table join (live readings vs. dim_machine.NominalPowerKw) and causal correlation with EventTag |
-| 2 | Is there a machine where OEE has been declining while energy cost per unit has been rising? What does that suggest about its operational health? | Inverse trend detection across two metrics over time; business interpretation of signal correlation |
+| 2 | Is there a machine where OEE has been declining while energy cost per unit has been rising? What does that suggest about its operational health? | Calls `machines_with_declining_efficiency()` — inverse trend detection across two metrics; business interpretation of signal correlation |
 | 3 | Which shift produces the most units per euro spent, and does that advantage come from lower tariffs or better OEE? | Derived ratio reasoning (TotalUnits / TotalCostEur) with causal attribution across energy_by_shift and dim_energy_tariff |
 | 4 | Which critical machines are past their maintenance cycle and also showing above-average power draw? Should I be concerned? | Risk assessment joining dim_machine (CriticalityRating, MaintenanceCycleDays, InstallYear) with real-time consumption patterns |
-| 5 | Over the last hour, did any machine experience a sudden power spike followed by an OEE drop within the next few minutes? Describe the sequence of events. | Temporal pattern detection — windowed time-series analysis with event sequencing and narrative explanation |
-| 6 | What percentage of today's total energy cost is attributable to anomalous events (spikes or degradation) versus normal operation? | Cost decomposition by filtering on EventTag presence; quantifying the financial impact of anomalies |
+| 5 | Over the last hour, did any machine experience a sudden power spike followed by an OEE drop within the next few minutes? Describe the sequence of events. | Calls `spike_then_oee_drop()` — temporal pattern detection with event sequencing and narrative explanation |
+| 6 | What percentage of today's total energy cost is attributable to anomalous events (spikes or degradation) versus normal operation? | Calls `anomaly_cost_share()` — cost decomposition by EventTag presence; quantifying financial impact of anomalies |
 | 7 | Compare Line2-Weld and Line4-Assembly: which line is more energy-efficient per production unit, and what machine characteristics from the dimension table explain the difference? | Multi-table benchmarking with causal explanation — aggregated KQL metrics joined to dim_machine attributes (MachineType, NominalPowerKw, InstallYear, BaseOEE) |
 
 ---

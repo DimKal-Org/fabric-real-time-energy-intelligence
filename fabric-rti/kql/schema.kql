@@ -201,7 +201,70 @@ policy update
 energy_by_shift_incremental()
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// (Optional)
+// Agent helper functions
+// These pre-built functions encapsulate complex analytical patterns so the
+// Fabric Data Agent can call them directly instead of constructing advanced KQL.
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// Q2 — Machines where OEE is declining while cost per unit rises (shift-over-shift)
+.create-or-alter function machines_with_declining_efficiency()
+{
+    energy_by_shift
+    | order by MachineId asc, ShiftStart asc
+    | serialize
+    | extend PrevOee = prev(AvgOee), PrevCost = prev(AvgCostPerUnit), PrevMachine = prev(MachineId)
+    | where MachineId == PrevMachine and isnotnull(PrevOee)
+    | extend OeeDecline = iff(AvgOee < PrevOee, 1, 0),
+             CostRise   = iff(AvgCostPerUnit > PrevCost, 1, 0)
+    | summarize
+        DecliningOeeShifts = sum(OeeDecline),
+        RisingCostShifts   = sum(CostRise),
+        TotalShifts        = count(),
+        LatestOee          = arg_max(ShiftStart, AvgOee),
+        LatestCostPerUnit  = arg_max(ShiftStart, AvgCostPerUnit)
+      by MachineId
+    | project MachineId, DecliningOeeShifts, RisingCostShifts, TotalShifts,
+              LatestOee = AvgOee, LatestCostPerUnit = AvgCostPerUnit,
+              HealthPattern = iff(DecliningOeeShifts > 0 and RisingCostShifts > 0,
+                  "OEE declining while cost rising — investigate maintenance or process issues",
+                  "No clear negative pattern")
+    | order by DecliningOeeShifts desc
+}
+
+// Q5 — Power spike followed by OEE drop within 5 minutes on the same machine
+.create-or-alter function spike_then_oee_drop()
+{
+    let spikes = ces_energy_readings_curated
+        | where Timestamp > ago(1h) and EventTag has "energy_spike"
+        | project MachineId, SpikeTime = Timestamp, PowerKw, SpikeOee = OeePercent;
+    let drops = ces_energy_readings_curated
+        | where Timestamp > ago(1h) and EventTag has "oee_degrade"
+        | project MachineId, DropTime = Timestamp, DropOee = OeePercent;
+    spikes
+    | join kind=inner drops on MachineId
+    | where DropTime > SpikeTime and DropTime <= SpikeTime + 5m
+    | project MachineId, SpikeTime, PowerKw, OeeBefore = SpikeOee,
+              DropTime, OeeAfter = DropOee, Gap = DropTime - SpikeTime
+    | summarize arg_min(Gap, *) by MachineId, SpikeTime
+    | order by SpikeTime desc
+}
+
+// Q6 — Percentage of today's total energy cost from anomalous vs normal operation
+.create-or-alter function anomaly_cost_share()
+{
+    ces_energy_readings_curated
+    | where Timestamp > ago(24h)
+    | extend IsAnomaly = isnotempty(EventTag)
+    | summarize
+        TotalCostEur   = sum(CostThisTick),
+        AnomalyCostEur = sumif(CostThisTick, IsAnomaly),
+        NormalCostEur  = sumif(CostThisTick, not(IsAnomaly)),
+        AnomalyReadings = countif(IsAnomaly),
+        NormalReadings   = countif(not(IsAnomaly))
+    | extend
+        AnomalyPct = round(AnomalyCostEur / TotalCostEur * 100, 2),
+        NormalPct  = round(NormalCostEur  / TotalCostEur * 100, 2)
+}
 .create materialized-view with (backfill=true) machine_cost_last_10min on table ces_energy_readings_curated
 {
     ces_energy_readings_curated
