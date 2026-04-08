@@ -328,7 +328,7 @@ You are talking to a plant manager or operations director. Be direct and actiona
 
 | # | Question | What it demonstrates |
 |---|---|---|---|
-| 1 | Which machine is currently consuming power significantly above its nominal rating, and what event might explain it?	| Anomaly detection via cross-table join (live readings vs. dim_machine.NominalPowerKw) and causal correlation with EventTag |
+| 1 | Which machine is currently consuming power significantly above its nominal rating, and what event might explain it? | Anomaly detection via cross-table join (live readings vs. dim_machine.NominalPowerKw) and causal correlation with EventTag |
 | 2 | Is there a machine where OEE has been declining while energy cost per unit has been rising? What does that suggest about its operational health? | Inverse trend detection across two metrics over time; business interpretation of signal correlation |
 | 3 | Which shift produces the most units per euro spent, and does that advantage come from lower tariffs or better OEE? | Derived ratio reasoning (TotalUnits / TotalCostEur) with causal attribution across energy_by_shift and dim_energy_tariff |
 | 4 | Which critical machines are past their maintenance cycle and also showing above-average power draw? Should I be concerned? | Risk assessment joining dim_machine (CriticalityRating, MaintenanceCycleDays, InstallYear) with real-time consumption patterns |
