@@ -378,7 +378,6 @@ You are talking to a plant manager or operations director. Be direct and actiona
 
 ```
 fabric-rti/
-├── README.md                        ← this file
 ├── sql/
 │   └── setup.sql                    ← Phase A scripts (DDL + CES + auth)
 ├── notebooks/
