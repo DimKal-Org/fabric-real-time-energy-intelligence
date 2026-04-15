@@ -283,21 +283,77 @@ energy_by_shift
 
 ### E2 — Fabric Activator
 
-Create a **Data Activator** to automatically alert when a machine's cost per unit exceeds its normal range.
+__Cost Per Unit Breach Alert using KQL + Activator__
 
-1. In the Fabric workspace, click **+ New → Activator**.
-2. **Source:** KQL Database → `ces_energy_readings_curated`
-3. **Object ID:** Set `MachineId` as the object identifier (each machine is monitored independently).
-4. **Condition:** `CostPerUnit > 0.003` (baseline machines sit around €0.001–0.002 per unit; a 2.3× spike pushes it well above this threshold).
-5. **Action:** Send a **Teams message** or **Email** — e.g., *"Machine {MachineId} cost per unit exceeded threshold: €{CostPerUnit}"*
+#### 1. Create the KQL Queryset
 
-**Demo flow:**
-1. Simulator running → dashboard shows stable baseline → Activator is silent.
-2. Presenter opens Variable Library → sets `spike_machine_id` = `WELD-L2-A` and `spike_power_multiplier` = `2.3`.
-3. Next simulator tick picks it up → power surges → CES → Event Hub → KQL.
-4. Dashboard visibly spikes within 30 seconds.
-5. Activator fires → Teams/email notification arrives.
-6. Presenter resets `spike_power_multiplier` = `1.0` → machine returns to normal → alert clears.
+First, we define exactly what **“failure”** looks like.
+
+1. In your workspace, select **+ New → KQL Queryset**
+2. Connect the Queryset to your database
+3. Paste the following query:
+
+```kql
+ces_energy_readings_curated
+| where Timestamp >= ago(15m)
+| where CostPerUnit > 0.05
+| summarize
+    CostPerUnit = round(max(CostPerUnit), 3),
+    BreachCount = count()
+  by MachineId, TimeBucket = bin(Timestamp, 5m)
+| project MachineId, TimeBucket, CostPerUnit, BreachCount
+| order by TimeBucket asc, MachineId asc
+```
+
+4. Run the query to confirm:
+   - You see results **or**
+   - At minimum, the expected column headers
+
+---
+
+#### 2. Bridge to Activator (The “Set Alert” Path)
+
+Once the query is active, use the **Set Alert** shortcut.
+
+1. In the Queryset toolbar, click **Set Alert**
+2. In the side pane, configure the following:
+
+#### Evaluation
+
+- **Check every**: `5 minutes`  
+  *(Must match the `bin(Timestamp, 5m)` in the query)*
+
+- **Condition**: `On each event`  
+  > ✅ This is the critical setting  
+  > Since the query only returns breach rows, **each row represents an alert**
+
+- **Group by**: `MachineId`
+
+---
+
+#### 3. Configure the Action
+
+1. Under **Action**, select one of:
+   - **Teams**
+   - **Email**
+
+2. In the **Message** field, use dynamic values from the query:
+
+```text
+Machine {MachineId} cost per unit exceeded threshold: €{CostPerUnit}
+(Detected {BreachCount} times in the last 5 mins).
+```
+
+3. Click **Create**
+
+---
+
+#### 🎯 **The query defines failure — Activator simply reacts to it**
+
+- Every 5 minutes, Activator evaluates the query
+- Each MachineId that breaches the threshold emits an event
+- A notification is sent immediately via the selected action
+- No additional thresholds or aggregations are required
 
 > **Demo talking point:** "No code was changed. No notebook was restarted. A single configuration change in the Variable Library caused a real data event that flowed through the entire pipeline — from SQL Server to Event Hub to KQL to an automated alert — in under a minute."
 
