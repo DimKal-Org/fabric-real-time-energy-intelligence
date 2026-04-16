@@ -34,6 +34,8 @@ KQL Database + ManufacturingLakehouse
     └── Fabric Data Agent             (queries BOTH KQL and Lakehouse)
 ```
 
+![RTI Architecture](RTI-Architecture.png)
+
 ## What the Demo Shows
 
 ### - **Phase 1 — Baseline (~0–2.5 min):** All 10 machines running normally. Clean, stable dashboard establishes trust with the audience.
