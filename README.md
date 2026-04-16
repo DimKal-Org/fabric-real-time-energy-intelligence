@@ -183,6 +183,7 @@ variables = notebookutils.variableLibrary.getLibrary("var_library_rti")
 # then use: variables.lakehouse_abfss
 ```
 Why a Variable Library? It decouples notebooks from a specific workspace or Lakehouse instance. You can clone the workspace, update a single variable, and all notebooks work — no find-and-replace across code cells.
+
 ---
 
 ## Phase C — Eventstream configuration for energy readings
