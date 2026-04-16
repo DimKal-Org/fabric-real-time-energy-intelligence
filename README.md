@@ -295,12 +295,12 @@ First, we define exactly what **“failure”** looks like.
 
 ```kql
 ces_energy_readings_curated
-| where Timestamp >= ago(15m)
-| where CostPerUnit > 0.05
-| summarize
-    CostPerUnit = round(max(CostPerUnit), 3),
-    BreachCount = count()
-  by MachineId, TimeBucket = bin(Timestamp, 5m)
+| where Timestamp >= ago(5m)
+| where (EventTag == "energy_spike" or EventTag startswith("variable_spike"))
+| where CostPerUnit > 0.03
+| summarize CostPerUnit = round(max(CostPerUnit),3),
+            BreachCount = count()
+          by MachineId, TimeBucket = bin(Timestamp, 5m)
 | project MachineId, TimeBucket, CostPerUnit, BreachCount
 | order by TimeBucket asc, MachineId asc
 ```
