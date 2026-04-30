@@ -45,6 +45,6 @@ Flip one variable in the Fabric Variable Library, watch the spike propagate end-
 - ✅ A 30-minute pre-flight checklist and a "if something goes wrong" runbook — built for live demos, not just screenshots
 
 📦 **Clone the full repo — schemas, notebooks, dashboards, and agent prompts:**
-👉 `https://github.com/<your-handle>/fabric-real-time-energy-intelligence`
+👉 `https://github.com/DimKal-Org/fabric-real-time-energy-intelligence`
 
 *If you've ever wanted to show a manufacturing audience what Fabric actually feels like under load — start here.*
