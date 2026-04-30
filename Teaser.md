@@ -6,7 +6,7 @@
 
 This isn't a slide. It's a working, end-to-end demo you can clone today.
 
-![End-to-end architecture — Azure SQL → CES → Event Hub → Fabric Eventstream → KQL → Dashboard, Data Agent, Activator](infra/assets/RTI-Architecture.png)
+![End-to-end architecture — Azure SQL → CES → Event Hub → Fabric Eventstream → KQL → Dashboard, Data Agent, Activator](fabric-rti/Assets/RTI-Architecture.png)
 
 **The pipeline, in one breath:**
 Azure SQL Server 2025 → **Change Event Streaming** → Event Hub → Fabric Eventstream →
@@ -18,20 +18,20 @@ KQL Database → **Real-Time Dashboard** + **Fabric Data Agent** + **Activator**
 
 ### 🔥 A loud anomaly — and 🤫 a silent one, side by side
 
-![Real-Time Dashboard showing the WELD-L2-A power spike alongside the COAT-L3-A OEE drift](infra/assets/dashboard.png)
+![Real-Time Dashboard showing the WELD-L2-A power spike alongside the COAT-L3-A OEE drift](fabric-rti/Assets/dashboard.png)
 
 - **The loud one:** A welding cell surges to 2.3× nominal power. Cost-per-unit spikes. The dashboard screams.
 - **The silent one:** A coating line's OEE drifts from 82% → 61% while power stays flat. Same energy in, fewer good units out — the kind of bleed that costs manufacturers millions before anyone notices.
 
 ### 🧠 A unified agent that crosses data stores
 
-![Fabric Data Agent answering a compound question across KQL real-time data and Lakehouse Delta tables](infra/assets/data-agent-answer.png)
+![Fabric Data Agent answering a compound question across KQL real-time data and Lakehouse Delta tables](fabric-rti/Assets/data-agent-answer.png)
 
 The Fabric Data Agent answers compound questions across **real-time KQL** *and* **Lakehouse Delta** in one conversation — enriched with carbon intensity (gCO₂/kWh) for the sustainability story your CFO now asks about.
 
 ### ⚡ A live "panic button" — sensor to Teams in 30 seconds
 
-![Teams notification fired by Fabric Activator when cost-per-unit breaches threshold](infra/assets/activator-teams-alert.png)
+![Teams notification fired by Fabric Activator when cost-per-unit breaches threshold](fabric-rti/Assets/activator-teams-alert.png)
 
 Flip one variable in the Fabric Variable Library, watch the spike propagate end-to-end, and let Activator fire a Teams notification with **zero code changes on stage**.
 

@@ -3,6 +3,51 @@
 
 ---
 
+> **TL;DR** — A 7-minute live demo that streams synthetic factory-floor energy
+> data from Azure SQL (via SQL Server 2025 Change Event Streaming) into Microsoft
+> Fabric, surfaces it on a Real-Time Dashboard, lets a Fabric Data Agent answer
+> compound questions across KQL + Lakehouse, and fires a Teams alert through
+> Activator — all reproducible from this repo.
+
+| Loud anomaly | Silent anomaly | Cross-store agent | Live Teams alert |
+|---|---|---|---|
+| ![spike](fabric-rti/Assets/dashboard-spike.png) | ![drift](fabric-rti/Assets/dashboard-oee.png) | ![agent](fabric-rti/Assets/data-agent-answer.png) | ![alert](fabric-rti/Assets/activator-teams-alert.png) |
+| WELD-L2-A surges to 2.3× nominal power | COAT-L3-A OEE drifts 82% → 61% | KQL real-time + Lakehouse Delta in one answer | Variable Library flip → Activator → Teams in <30s |
+
+**Stack:** Azure SQL 2025 · CES · Event Hubs · Fabric Eventstream · Eventhouse (KQL) · Lakehouse · Real-Time Dashboard · Data Agent · Activator
+
+---
+
+## Prerequisites
+
+Before you start, make sure you have:
+
+| Requirement | Notes |
+|---|---|
+| **Microsoft Fabric capacity** | F2 minimum, **F4 recommended** for smooth live streaming during a demo. Trial capacity also works for self-paced exploration. |
+| **Azure subscription** | With permission to create Event Hubs, SQL Database, Key Vault, and approve private endpoints. |
+| **Azure SQL Database (SQL Server 2025)** | Required for Change Event Streaming. CES is a SQL Server 2025 **preview feature** — APIs may change before GA. |
+| **Azure Event Hubs namespace** | Standard tier. Public endpoint required (CES does not support private endpoints today). |
+| **Azure Key Vault** | To store SQL credentials and Event Hub SAS keys. Never hardcode secrets in notebooks. |
+| **SSMS (or equivalent)** | To run `fabric-rti/SQL scripts/setup.sql` against the Azure SQL Database. |
+| **Microsoft Teams** | Optional — only needed if you want the Activator → Teams notification at the end of the demo. |
+
+### Estimated cost (rough order of magnitude)
+
+These are ballpark figures for running the demo for a single rehearsal day in West Europe — verify against the [Azure Pricing Calculator](https://azure.microsoft.com/pricing/calculator/) for your region.
+
+| Resource | Approx. daily cost | Notes |
+|---|---|---|
+| Fabric F4 capacity | ~€15–20/day | Pause when not in use to control cost |
+| Azure SQL Database (S0–S1) | ~€1–2/day | The simulator workload is light |
+| Event Hubs (Standard, 1 TU) | ~€0.70/day | One namespace, one event hub |
+| Azure Key Vault | <€0.05/day | A handful of secrets, minimal operations |
+| **Total** | **~€17–23/day** | Excluding egress and any existing Fabric capacity already provisioned |
+
+> ⚠️ **Preview feature notice.** Change Event Streaming (CES) is a SQL Server 2025 preview capability at the time of writing. APIs, supported destinations, and networking constraints (e.g. the public-endpoint requirement for Event Hubs) may change before general availability. Always check the [official SQL Server CES documentation](https://learn.microsoft.com/sql/relational-databases/track-changes/change-event-streaming) before deploying to production.
+
+---
+
 ## Overview
 
 This guide walks through the complete implementation of an end-to-end real-time analytics demo. The scenario simulates an industrial manufacturing plant streaming energy consumption data from an Azure SQL Database — using Change Event Streaming (CES) — through Azure Event Hub into Microsoft Fabric, where it is surfaced via a **Real-time dashboard in Fabric** and a **Fabric data agent**.
@@ -34,7 +79,9 @@ KQL Database + ManufacturingLakehouse
     └── Fabric Data Agent             (queries BOTH KQL and Lakehouse)
 ```
 
-![RTI Architecture](RTI-Architecture.png)
+![RTI Architecture](fabric-rti/Assets/RTI-Architecture.png)
+
+> The architecture source is `fabric-rti/Assets/RTI-Architecture.excalidraw`. Export it to `RTI-Architecture.png` in the same folder before publishing.
 
 ## What the Demo Shows
 
@@ -113,7 +160,7 @@ The KQL schema defines ces_energy_readings_curated and energy_by_shift as physic
 ### I2. Create Azure SQL Server and Database
 1. In the Azure portal, create a new **Azure SQL Database**. Create a server if need be or host it to an existing server.
 
-2. Enable access from selected networks temporarily to connect through SSMS and execute the `sql/setup.sql script`.
+2. Enable access from selected networks temporarily to connect through SSMS and execute the `fabric-rti/SQL scripts/setup.sql` script.
 
 ---
 
@@ -157,7 +204,7 @@ The simulator notebook connects using either SQL Authentication or a Service Pri
 ### B3 — Create KQL database and table
 
 1. In the Fabric workspace, create a new **Eventhouse** named `ManufacturingKQL`; this will also create a KQL database with the same name.
-2. Run `kql/schema.kql` in the KQL query editor.
+2. Run `fabric-rti/KQL scripts/schema.kql` in the KQL query editor.
 
 Objects created:
 
@@ -212,19 +259,19 @@ Why a Variable Library? It decouples notebooks from a specific workspace or Lake
 
 ### D1 — Carbon Intensity notebook (run once)
 
-Run the notebook `notebooks/01_carbon_intensity.ipynb`. No configuration needed. Re-running safely overwrites data.
+Run the notebook `fabric-rti/Notebooks/01_carbon_intensity.ipynb`. No configuration needed. Re-running safely overwrites data.
 
 ### D2 - Seed Dimensions notebook (run once)
 
-Run the notebook `notebooks/00_seed_dimensions.ipynb`.
+Run the notebook `fabric-rti/Notebooks/00_seed_dimensions.ipynb`.
 
-> For the demo, use `TARIFF-DEMO` (flat €0.14/kWh) to keep cost calculations simple and explainable. In a real deployment you would join against peak/off-peak tariffs dynamically.
+> For the demo, use `TARIFF-DEMO` (flat €0.85/kWh) to keep cost calculations simple and explainable. In a real deployment you would join against peak/off-peak tariffs dynamically.
 
 ### D3 — Energy simulator notebook
 
 This is the main simulator. Connect to SQL Server using your chosen authentication method and run the continuous loop.
 
-Run the notebook `notebooks/02_energy_simulator.ipynb`.
+Run the notebook `fabric-rti/Notebooks/02_energy_simulator.ipynb`.
 ---
 
 ## Phase E — Insights Layer
@@ -420,7 +467,7 @@ You are talking to a plant manager or operations director. Be direct and actiona
 - [ ] Open Real Time Dashboard — confirm tiles refreshing with live data
 - [ ] Open data agent — run one test question to confirm it responds correctly
 - [ ] Check Eventstream status — should show **Running**
-- [ ] Confirm Activator is active and condition is set (`CostPerUnit > 0.003`)
+- [ ] Confirm Activator is active and condition is set (`CostPerUnit > 0.03`)
 - [ ] Confirm Variable Library has `spike_machine_id` = *(empty)* and `spike_power_multiplier` = `1.0`
 
 ### During the demo
@@ -443,12 +490,16 @@ You are talking to a plant manager or operations director. Be direct and actiona
 
 ```
 fabric-rti/
-├── sql/
-│   └── setup.sql                    ← Phase A scripts (DDL + CES + auth)
-├── notebooks/
-│   ├── 00_seed_dimensions.ipynb        ← Phase B2: Lakehouse dimension tables
-│   ├── 01_carbon_intensity.ipynb       ← Phase D1: carbon Intensity → Lakehouse
+├── Assets/
+│   └── RTI-Architecture.excalidraw     ← architecture source (export to PNG before publishing)
+├── SQL scripts/
+│   └── setup.sql                       ← Phase A scripts (DDL + CES + auth)
+├── Notebooks/
+│   ├── 00_seed_dimensions.ipynb        ← Phase D2: Lakehouse dimension tables
+│   ├── 01_carbon_intensity.ipynb       ← Phase D1: carbon intensity → Lakehouse
 │   └── 02_energy_simulator.ipynb       ← Phase D3: simulator → SQL Server
-└── kql/
-    └── schema.kql                   ← Phase B4: all KQL table and view definitions
+├── KQL scripts/
+│   └── schema.kql                      ← Phase B3: all KQL table and update-policy definitions
+└── Real Time Dashboard/
+    └── RealTimeDashboard.json          ← Phase E1: dashboard definition
 ```
