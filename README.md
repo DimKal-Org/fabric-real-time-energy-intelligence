@@ -498,5 +498,5 @@ fabric-rti/
 
 ## Credits
 
-Built by **Dimitrios Kalamaras** — [LinkedIn](https://www.linkedin.com/in/dkalamaras/) · [GitHub](https://github.com/DimKal-Org).
+Built by **Dimitris Kalamaras** — [LinkedIn](https://www.linkedin.com/in/dkalamaras/) · [GitHub](https://github.com/DimKal-Org).
 Feedback, issues, and PRs are welcome.
