@@ -3,16 +3,12 @@
 
 ---
 
-> **TL;DR** — A 7-minute live demo that streams synthetic factory-floor energy
+> A 7-minute live demo that streams synthetic factory-floor energy
 > data from Azure SQL (via SQL Server 2025 Change Event Streaming) into Microsoft
 > Fabric, surfaces it on a Real-Time Dashboard, lets a Fabric Data Agent answer
 > compound questions across KQL + Lakehouse, and fires a Teams alert through
 > Activator — all reproducible from this repo.
 
-| Loud anomaly | Silent anomaly | Cross-store agent | Live Teams alert |
-|---|---|---|---|
-| ![spike](fabric-rti/Assets/dashboard-spike.png) | ![drift](fabric-rti/Assets/dashboard-oee.png) | ![agent](fabric-rti/Assets/data-agent-answer.png) | ![alert](fabric-rti/Assets/activator-teams-alert.png) |
-| WELD-L2-A surges to 2.3× nominal power | COAT-L3-A OEE drifts 82% → 61% | KQL real-time + Lakehouse Delta in one answer | Variable Library flip → Activator → Teams in <30s |
 
 **Stack:** Azure SQL 2025 · CES · Event Hubs · Fabric Eventstream · Eventhouse (KQL) · Lakehouse · Real-Time Dashboard · Data Agent · Activator
 
@@ -32,17 +28,7 @@ Before you start, make sure you have:
 | **SSMS (or equivalent)** | To run `fabric-rti/SQL scripts/setup.sql` against the Azure SQL Database. |
 | **Microsoft Teams** | Optional — only needed if you want the Activator → Teams notification at the end of the demo. |
 
-### Estimated cost (rough order of magnitude)
-
-These are ballpark figures for running the demo for a single rehearsal day in West Europe — verify against the [Azure Pricing Calculator](https://azure.microsoft.com/pricing/calculator/) for your region.
-
-| Resource | Approx. daily cost | Notes |
-|---|---|---|
-| Fabric F4 capacity | ~€15–20/day | Pause when not in use to control cost |
-| Azure SQL Database (S0–S1) | ~€1–2/day | The simulator workload is light |
-| Event Hubs (Standard, 1 TU) | ~€0.70/day | One namespace, one event hub |
-| Azure Key Vault | <€0.05/day | A handful of secrets, minimal operations |
-| **Total** | **~€17–23/day** | Excluding egress and any existing Fabric capacity already provisioned |
+---
 
 > ⚠️ **Preview feature notice.** Change Event Streaming (CES) is a SQL Server 2025 preview capability at the time of writing. APIs, supported destinations, and networking constraints (e.g. the public-endpoint requirement for Event Hubs) may change before general availability. Always check the [official SQL Server CES documentation](https://learn.microsoft.com/sql/relational-databases/track-changes/change-event-streaming) before deploying to production.
 
@@ -88,7 +74,7 @@ KQL Database + ManufacturingLakehouse
 ### - **Phase 1 — Baseline (~0–2.5 min):** 
 All 10 machines running normally. Clean, stable dashboard establishes trust with the audience.
 ### - **Phase 2 — Energy spike (~2.5 min):**       
-WELD-L2-A surges to 2.3× normal power draw. Cost-per-unit spikes visibly on the dashboard. Agent explains why.
+WELD-L2-B surges to 2.3× normal power draw. Cost-per-unit spikes visibly on the dashboard. Agent explains why.
 ### - **Phase 3 — OEE degradation (~4 min):**      
 COAT-L3-A drifts from 82% to ~61% OEE. Power stays flat but output drops — a silent financial bleed invisible without real-time data.
 ### - **Phase 4 — Both active (~4–7 min):**        
@@ -458,7 +444,7 @@ You are talking to a plant manager or operations director. Be direct and actiona
 
 ---
 
-## Demo Day Checklist
+## Demo Checklist
 
 ### 30 minutes before
 
@@ -476,7 +462,7 @@ You are talking to a plant manager or operations director. Be direct and actiona
 - Phase 2 (energy spike) begins at approximately **2.5 minutes** after D3 starts
 - Phase 3 (OEE degradation) begins at approximately **4 minutes** after D3 starts
 - Both anomalies are sustained from **4 minutes** onwards — this is when to ask the compound agent questions
-- **Phase 5 (Activator):** When ready, open Variable Library → set `spike_machine_id` = `WELD-L2-A` and `spike_power_multiplier` = `2.3` → wait for dashboard spike → Teams notification arrives → reset `spike_power_multiplier` = `1.0`
+- **Phase 5 (Activator):** When ready, open Variable Library → set `spike_machine_id` = `WELD-L2-B` and `spike_power_multiplier` = `2.3` → wait for dashboard spike → Teams notification arrives → reset `spike_power_multiplier` = `1.0`
 
 ### If something goes wrong
 
