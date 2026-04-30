@@ -71,6 +71,8 @@ KQL Database + ManufacturingLakehouse
 
 ## What the Demo Shows
 
+![Real-Time Dashboard during the demo — WELD-L2-A power spike alongside the COAT-L3-A OEE drift](fabric-rti/Assets/dashboard.png)
+
 ### - **Phase 1 — Baseline (~0–2.5 min):** 
 All 10 machines running normally. Clean, stable dashboard establishes trust with the audience.
 ### - **Phase 2 — Energy spike (~2.5 min):**       
@@ -493,10 +495,6 @@ fabric-rti/
 ```
 
 ---
-
-## License
-
-Licensed under the [MIT License](LICENSE).
 
 ## Credits
 
