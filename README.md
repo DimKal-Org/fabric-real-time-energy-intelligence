@@ -53,7 +53,7 @@ Azure SQL Database (Not exposed to public internet)
                                             — energy_by_shift + Update policy (aggregation)
 
 [Reference & Context — seeded once before demo]
-Fabric Notebook (notebooks/00_seed_dimensions)
+Fabric Notebook (fabric-rti/Notebooks/00_seed_dimensions)
     └── ManufacturingLakehouse
             ├── dim_machine          (Delta table — machine metadata)
             ├── dim_energy_tariff    (Delta table — tariff lookup)
@@ -129,7 +129,7 @@ The KQL schema defines ces_energy_readings_curated and energy_by_shift as physic
 ### I1. Create Azure Event Hub resource
 
 1. In the Azure portal, create a new **Event Hubs namespace**. Standard tier is sufficient.
-2. Create two Event Hubs (topics) inside the namespace:
+2. Create an Event Hub (topic) inside the namespace:
 
 | Event Hub namespace     | Partition count | Retention | Purpose                        |
 |--------------------|-----------------|-----------|--------------------------------|
@@ -141,7 +141,7 @@ The KQL schema defines ces_energy_readings_curated and energy_by_shift as physic
 |--------------------|-----------------|--------------------------------|
 | `energy-readings`  | `energy-cg`     | Fabric Eventstream pipeline 1  |
 
-4. Create a **Shared Access Policy** with `Send` + `Listen` permissions. Note the connection string — you will need it for the SQL configuration part..
+4. Create a **Shared Access Policy** with `Send` + `Listen` permissions. Note the connection string — you will need it for the SQL configuration part.
 
 ### I2. Create Azure SQL Server and Database
 1. In the Azure portal, create a new **Azure SQL Database**. Create a server if need be or host it to an existing server.
@@ -226,7 +226,7 @@ Why a Variable Library? It decouples notebooks from a specific workspace or Lake
 
 ## Phase C — Eventstream configuration for energy readings
 
-1. In Fabric `Manage connections and gateways` page create a new `Cloud` connection pointing to the Event Hub Azure reosurce. Use SAS Key for authentication.
+1. In Fabric `Manage connections and gateways` page create a new `Cloud` connection pointing to the Event Hub Azure resource. Use SAS Key for authentication.
 2. In the Fabric workspace, create a new **Eventstream** named `EnergyReadingsStream`.
 3. **Source:** Azure Event Hub
    - Namespace: `demo-fabric-agents-rti`
