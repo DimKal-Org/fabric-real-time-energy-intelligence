@@ -74,13 +74,15 @@ KQL Database + ManufacturingLakehouse
 ### - **Phase 1 — Baseline (~0–2.5 min):** 
 All 10 machines running normally. Clean, stable dashboard establishes trust with the audience.
 ### - **Phase 2 — Energy spike (~2.5 min):**       
-WELD-L2-B surges to 2.3× normal power draw. Cost-per-unit spikes visibly on the dashboard. Agent explains why.
+WELD-L2-A surges to 2.3× normal power draw. Cost-per-unit spikes visibly on the dashboard. Agent explains why.
 ### - **Phase 3 — OEE degradation (~4 min):**      
 COAT-L3-A drifts from 82% to ~61% OEE. Power stays flat but output drops — a silent financial bleed invisible without real-time data.
 ### - **Phase 4 — Both active (~4–7 min):**        
 Two simultaneous problems visible. Data agent answers compound questions across both anomalies, enriched with carbon context from the Lakehouse. After ~7 min the spike resolves — but the silent OEE bleed on COAT-L3-A continues, showing the harder-to-spot problem persists even after the obvious one clears.
 ### - **Phase 5 — Activator alert (on demand):**    
 Presenter flips a variable in the Variable Library (`spike_power_multiplier` → `2.3`). Dashboard spikes within 30 seconds. The Fabric Activator fires a Teams notification automatically — closing the loop from sensor to alert with zero code changes during the demo.
+
+> **Note on the two welding cells:** `WELD-L2-A` runs the **scripted sigmoid ramp** in Phase 2 (hardcoded in the simulator). `WELD-L2-B` is reserved for the **on-demand Variable Library spike** in Phase 5 — so the two anomalies never collide and the presenter always has a clean cell to trigger live.
 
 ---
 
@@ -489,3 +491,14 @@ fabric-rti/
 └── Real Time Dashboard/
     └── RealTimeDashboard.json          ← Phase E1: dashboard definition
 ```
+
+---
+
+## License
+
+Licensed under the [MIT License](LICENSE).
+
+## Credits
+
+Built by **Dimitrios Kalamaras** — [LinkedIn](https://www.linkedin.com/in/dkalamaras/) · [GitHub](https://github.com/DimKal-Org).
+Feedback, issues, and PRs are welcome.
