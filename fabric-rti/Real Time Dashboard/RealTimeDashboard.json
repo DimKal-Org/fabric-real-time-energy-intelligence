@@ -1,0 +1,329 @@
+{
+  "schema_version": 74,
+  "autoRefresh": {
+    "enabled": true,
+    "defaultInterval": "30s",
+    "minInterval": "30s"
+  },
+  "tiles": [
+    {
+      "id": "8dfc3627-de62-42ad-b55f-dea244070adf",
+      "title": "Cost per unit — per machine (last 10 minutes)",
+      "visualType": "column",
+      "pageId": "333c9279-4723-499f-a11f-4a57f72e5a0d",
+      "layout": {
+        "x": 0,
+        "y": 10,
+        "width": 10,
+        "height": 13
+      },
+      "queryRef": {
+        "kind": "query",
+        "queryId": "2ae4c494-b992-4180-9f05-044f9fc1a5dc"
+      },
+      "visualOptions": {
+        "multipleYAxes": {
+          "base": {
+            "id": "-1",
+            "label": "",
+            "columns": [],
+            "yAxisMaximumValue": null,
+            "yAxisMinimumValue": null,
+            "yAxisScale": "linear",
+            "horizontalLines": []
+          },
+          "additional": [],
+          "showMultiplePanels": false
+        },
+        "seriesColors": {
+          "AvgCostPerUnit": "color--(12)"
+        },
+        "hideLegend": false,
+        "legendLocation": "bottom",
+        "xColumnTitle": "",
+        "xColumn": null,
+        "yColumns": null,
+        "seriesColumns": null,
+        "xAxisScale": "linear",
+        "verticalLine": "",
+        "crossFilterDisabled": false,
+        "drillthroughDisabled": false,
+        "forceAxisTicks": false,
+        "crossFilter": [],
+        "drillthrough": []
+      }
+    },
+    {
+      "id": "d58d0f74-eada-405c-9c5b-c41c1593dff9",
+      "title": "Live energy draw — all machines (last 15 minutes)",
+      "visualType": "line",
+      "pageId": "333c9279-4723-499f-a11f-4a57f72e5a0d",
+      "layout": {
+        "x": 0,
+        "y": 0,
+        "width": 21,
+        "height": 10
+      },
+      "queryRef": {
+        "kind": "query",
+        "queryId": "3a5bdb92-bc99-437c-9626-158a80debd41"
+      },
+      "visualOptions": {
+        "multipleYAxes": {
+          "base": {
+            "id": "-1",
+            "label": "",
+            "columns": [],
+            "yAxisMaximumValue": null,
+            "yAxisMinimumValue": null,
+            "yAxisScale": "linear",
+            "horizontalLines": []
+          },
+          "additional": [],
+          "showMultiplePanels": false
+        },
+        "seriesColors": {},
+        "hideLegend": false,
+        "legendLocation": "bottom",
+        "xColumnTitle": "",
+        "xColumn": null,
+        "yColumns": null,
+        "seriesColumns": null,
+        "xAxisScale": "linear",
+        "verticalLine": "",
+        "crossFilterDisabled": false,
+        "drillthroughDisabled": false,
+        "forceAxisTicks": false,
+        "crossFilter": [],
+        "drillthrough": []
+      }
+    },
+    {
+      "id": "bc33475e-9669-45df-bd35-a7191bb31fae",
+      "title": "OEE trend (last 15 minutes)",
+      "visualType": "line",
+      "pageId": "333c9279-4723-499f-a11f-4a57f72e5a0d",
+      "layout": {
+        "x": 10,
+        "y": 10,
+        "width": 11,
+        "height": 13
+      },
+      "queryRef": {
+        "kind": "query",
+        "queryId": "84634708-c7b2-404c-853a-d7bb61f2b944"
+      },
+      "visualOptions": {
+        "multipleYAxes": {
+          "base": {
+            "id": "-1",
+            "label": "",
+            "columns": [],
+            "yAxisMaximumValue": null,
+            "yAxisMinimumValue": null,
+            "yAxisScale": "linear",
+            "horizontalLines": []
+          },
+          "additional": [],
+          "showMultiplePanels": false
+        },
+        "seriesColors": {},
+        "hideLegend": false,
+        "legendLocation": "bottom",
+        "xColumnTitle": "",
+        "xColumn": null,
+        "yColumns": null,
+        "seriesColumns": null,
+        "xAxisScale": "linear",
+        "verticalLine": "",
+        "crossFilterDisabled": false,
+        "drillthroughDisabled": false,
+        "forceAxisTicks": false,
+        "crossFilter": [],
+        "drillthrough": []
+      }
+    },
+    {
+      "id": "f98bca07-daef-4f32-8de5-08b7bb689315",
+      "title": "Total Cost €",
+      "visualType": "card",
+      "pageId": "333c9279-4723-499f-a11f-4a57f72e5a0d",
+      "layout": {
+        "x": 21,
+        "y": 0,
+        "width": 3,
+        "height": 8
+      },
+      "queryRef": {
+        "kind": "query",
+        "queryId": "56a096e5-9701-43e5-9f5b-83e349b14b8c"
+      },
+      "visualOptions": {
+        "multiStat__textSize": "large",
+        "multiStat__valueColumn": "Label",
+        "colorRulesDisabled": false,
+        "colorRules": []
+      }
+    },
+    {
+      "id": "f3157838-5982-4a8b-9d14-e72cae04d81d",
+      "title": "Total kWh",
+      "visualType": "card",
+      "pageId": "333c9279-4723-499f-a11f-4a57f72e5a0d",
+      "layout": {
+        "x": 21,
+        "y": 8,
+        "width": 3,
+        "height": 8
+      },
+      "queryRef": {
+        "kind": "query",
+        "queryId": "e115f166-f7fa-4ce9-8126-01499877afcd"
+      },
+      "visualOptions": {
+        "multiStat__textSize": "large",
+        "multiStat__valueColumn": "Label",
+        "colorRulesDisabled": false,
+        "colorRules": [
+          {
+            "id": "5a5b6d03-4d2a-4911-94d1-6dc6ba989574",
+            "ruleType": "colorByCondition",
+            "applyToColumn": null,
+            "hideText": false,
+            "applyTo": "cells",
+            "conditions": [
+              {
+                "operator": ">",
+                "column": "ValueRaw",
+                "values": [
+                  "70"
+                ]
+              }
+            ],
+            "chainingOperator": "and",
+            "colorStyle": "bold",
+            "color": "yellow",
+            "tag": "",
+            "icon": "warning",
+            "ruleName": "",
+            "visualType": "card"
+          }
+        ]
+      }
+    },
+    {
+      "id": "b47399d5-75a9-481d-8637-72157953082c",
+      "title": "Total Units",
+      "visualType": "card",
+      "pageId": "333c9279-4723-499f-a11f-4a57f72e5a0d",
+      "layout": {
+        "x": 21,
+        "y": 16,
+        "width": 3,
+        "height": 7
+      },
+      "queryRef": {
+        "kind": "query",
+        "queryId": "1b3bbeb3-5771-425f-b286-f1ec626515f6"
+      },
+      "visualOptions": {
+        "multiStat__textSize": "large",
+        "multiStat__valueColumn": "ValueRaw",
+        "colorRulesDisabled": false,
+        "colorRules": []
+      }
+    }
+  ],
+  "baseQueries": [],
+  "parameters": [
+    {
+      "kind": "duration",
+      "id": "f08e7724-6cc1-4078-ac9b-4bfc0a0d95c6",
+      "displayName": "Time range",
+      "description": "",
+      "beginVariableName": "_startTime",
+      "endVariableName": "_endTime",
+      "defaultValue": {
+        "kind": "dynamic",
+        "count": 1,
+        "unit": "hours"
+      },
+      "showOnPages": {
+        "kind": "all"
+      }
+    }
+  ],
+  "dataSources": [
+    {
+      "kind": "kusto-trident",
+      "id": "00381359-b631-49f7-9bd9-1ccf4f368ef9",
+      "name": "ManufacturingKQL",
+      "clusterUri": "",
+      "databaseArtifactId": "6de497b0-362e-437a-ae61-4c95c06b4358",
+      "database": "c06b4358-4c95-ae61-437a-362e6de497b0",
+      "workspace": "00000000-0000-0000-0000-000000000000"
+    }
+  ],
+  "pages": [
+    {
+      "name": "Page 1",
+      "id": "333c9279-4723-499f-a11f-4a57f72e5a0d"
+    }
+  ],
+  "queries": [
+    {
+      "dataSource": {
+        "kind": "inline",
+        "dataSourceId": "00381359-b631-49f7-9bd9-1ccf4f368ef9"
+      },
+      "text": "ces_energy_readings_curated\n| where Timestamp > ago(10m)\n| summarize AvgCostPerUnit = avg(CostPerUnit) by MachineId\n| order by AvgCostPerUnit desc",
+      "id": "2ae4c494-b992-4180-9f05-044f9fc1a5dc",
+      "usedVariables": []
+    },
+    {
+      "dataSource": {
+        "kind": "inline",
+        "dataSourceId": "00381359-b631-49f7-9bd9-1ccf4f368ef9"
+      },
+      "text": "ces_energy_readings_curated\n| where Timestamp > ago(15m)\n| summarize AvgPowerKw = avg(PowerKw) by MachineId, bin(Timestamp, 30s)\n| order by Timestamp asc",
+      "id": "3a5bdb92-bc99-437c-9626-158a80debd41",
+      "usedVariables": []
+    },
+    {
+      "dataSource": {
+        "kind": "inline",
+        "dataSourceId": "00381359-b631-49f7-9bd9-1ccf4f368ef9"
+      },
+      "text": "ces_energy_readings_curated\n| where Timestamp > ago(15m)\n| summarize AvgOee = avg(OeePercent) by MachineId, bin(Timestamp, 1m)",
+      "id": "84634708-c7b2-404c-853a-d7bb61f2b944",
+      "usedVariables": []
+    },
+    {
+      "dataSource": {
+        "kind": "inline",
+        "dataSourceId": "00381359-b631-49f7-9bd9-1ccf4f368ef9"
+      },
+      "text": "energy_by_shift\n| where ShiftStart > ago(8h)\n| summarize ValueRaw = round(sum(TotalCostEur), 2)\n| extend Label = strcat(\"€ \", tostring(ValueRaw))\n",
+      "id": "56a096e5-9701-43e5-9f5b-83e349b14b8c",
+      "usedVariables": []
+    },
+    {
+      "dataSource": {
+        "kind": "inline",
+        "dataSourceId": "00381359-b631-49f7-9bd9-1ccf4f368ef9"
+      },
+      "text": "energy_by_shift\n| where ShiftStart > ago(8h)\n| summarize ValueRaw = round(sum(TotalKwh), 2)\n| extend Label = strcat(tostring(ValueRaw),\" kWh\")\n",
+      "id": "e115f166-f7fa-4ce9-8126-01499877afcd",
+      "usedVariables": []
+    },
+    {
+      "dataSource": {
+        "kind": "inline",
+        "dataSourceId": "00381359-b631-49f7-9bd9-1ccf4f368ef9"
+      },
+      "text": "energy_by_shift\n| where ShiftStart > ago(8h)\n| summarize ValueRaw = round(sum(TotalUnits), 2)\n| extend Label = strcat(tostring(ValueRaw),\"\")\n",
+      "id": "1b3bbeb3-5771-425f-b286-f1ec626515f6",
+      "usedVariables": []
+    }
+  ]
+}
